@@ -1,6 +1,4 @@
-/**
- * stats.js — vista de Statium (script clásico).
- */
+
 (function () {
   'use strict';
 

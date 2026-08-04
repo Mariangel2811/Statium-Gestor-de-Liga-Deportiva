@@ -1,14 +1,6 @@
-/**
- * tables.js — StandingsTable, RankingTable y BracketView (script clásico).
- */
+
 (function () {
   'use strict';
-
-/**
- * tables.js — StandingsTable (tabla de posiciones), RankingTable
- * (rankings genéricos de jugadores) y BracketView (bracket visual).
- */
-
 // -------------------- StandingsTable --------------------
 
 class StandingsTable extends HTMLElement {
