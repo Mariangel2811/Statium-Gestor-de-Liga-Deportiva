@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statium — Gestor de Liga Deportiva</title>
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body data-sport="futbol">
+  <div id="app-root">
+    <nav-bar></nav-bar>
+    <main id="view-outlet">
+      <loading-state label="Cargando Statium…"></loading-state>
+    </main>
+    <app-footer></app-footer>
+  </div>
+  <div id="toast-outlet"></div>
+
+  <script src="js/db/db.js"></script>
+  <script src="js/sports-terms.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/seed.js"></script>
+
+  <script src="js/components/ui.js"></script>
+  <script src="js/components/cards.js"></script>
+  <script src="js/components/tables.js"></script>
+  <script src="js/components/chart-container.js"></script>
+  <script src="js/components/event-form.js"></script>
+  <script src="js/components/navbar.js"></script>
+  <script src="js/components/footer.js"></script>
+
+  <script src="js/views/helpers.js"></script>
+  <script src="js/views/dashboard.js"></script>
+  <script src="js/views/about.js"></script>
+  <script src="js/views/leagues.js"></script>
+  <script src="js/views/teams.js"></script>
+  <script src="js/views/team-detail.js"></script>
+  <script src="js/views/players.js"></script>
+  <script src="js/views/player-detail.js"></script>
+  <script src="js/views/matches.js"></script>
+  <script src="js/views/match-detail.js"></script>
+  <script src="js/views/stats.js"></script>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
