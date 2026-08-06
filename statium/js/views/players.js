@@ -2,6 +2,7 @@
 (function () {
   'use strict';
 
+
 const outlet = () => document.getElementById('view-outlet');
 let debounceTimer = null;
 
@@ -84,24 +85,23 @@ async function renderPlayers() {
     }
     grid.innerHTML = '';
     list.forEach((p) => {
-      const wrapper = document.createElement('div');
       const card = document.createElement('player-card');
       card.data = { player: p, team: teamsMap[p.teamId] };
       card.addEventListener('click', (e) => {
         if (e.target.closest('[data-role="player-actions"]')) return;
         window.Statium.Router.navigate(`#player/${p.id}`);
       });
-      wrapper.appendChild(card);
 
+      // Las acciones van DENTRO de la tarjeta para quedar encerradas por su borde.
       const actions = document.createElement('div');
       actions.dataset.role = 'player-actions';
       actions.className = 'flex';
       actions.style.cssText = 'margin-top:10px;gap:6px';
       actions.innerHTML = `<button class="btn btn-sm" data-act="edit">Editar</button><button class="btn btn-sm btn-danger" data-act="delete">Eliminar</button>`;
-      actions.querySelector('[data-act="edit"]').addEventListener('click', () => openPlayerForm(league, teams, p));
-      actions.querySelector('[data-act="delete"]').addEventListener('click', () => handleDelete(p));
-      wrapper.appendChild(actions);
-      grid.appendChild(wrapper);
+      actions.querySelector('[data-act="edit"]').addEventListener('click', (e) => { e.stopPropagation(); openPlayerForm(league, teams, p); });
+      actions.querySelector('[data-act="delete"]').addEventListener('click', (e) => { e.stopPropagation(); handleDelete(p); });
+      card.appendChild(actions);
+      grid.appendChild(card);
     });
   }
 

@@ -41,16 +41,15 @@ async function renderGrid(league) {
     const team = sorted[i];
     const players = await window.Statium.DB.getAllByIndex('players', 'teamId', team.id);
     team._playerCount = players.length;
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'relative';
     const card = document.createElement('team-card');
     card.data = { team, position: league.mode === 'liga' ? i + 1 : null };
     card.addEventListener('click', (e) => {
       if (e.target.closest('[data-role="team-actions"]')) return;
       window.Statium.Router.navigate(`#team/${team.id}`);
     });
-    wrapper.appendChild(card);
 
+    // Las acciones se insertan DENTRO de la tarjeta (no como hermano suelto)
+    // para que queden encerradas por el mismo borde/fondo de `.card`.
     const actions = document.createElement('div');
     actions.dataset.role = 'team-actions';
     actions.className = 'flex';
@@ -59,11 +58,11 @@ async function renderGrid(league) {
       <button class="btn btn-sm" data-act="edit">Editar</button>
       <button class="btn btn-sm btn-danger" data-act="delete">Eliminar</button>
     `;
-    actions.querySelector('[data-act="edit"]').addEventListener('click', () => openTeamForm(league, team));
-    actions.querySelector('[data-act="delete"]').addEventListener('click', () => handleDelete(league, team));
-    wrapper.appendChild(actions);
+    actions.querySelector('[data-act="edit"]').addEventListener('click', (e) => { e.stopPropagation(); openTeamForm(league, team); });
+    actions.querySelector('[data-act="delete"]').addEventListener('click', (e) => { e.stopPropagation(); handleDelete(league, team); });
+    card.appendChild(actions);
 
-    grid.appendChild(wrapper);
+    grid.appendChild(card);
   }
 }
 

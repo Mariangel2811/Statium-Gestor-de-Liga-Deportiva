@@ -2,6 +2,7 @@
 (function () {
   'use strict';
 
+
 const outlet = () => document.getElementById('view-outlet');
 
 async function renderPlayerDetail({ id }) {

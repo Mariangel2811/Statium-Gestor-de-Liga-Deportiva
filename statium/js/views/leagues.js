@@ -17,6 +17,7 @@ async function renderLeagues() {
       <div class="flex" style="gap:8px;flex-wrap:wrap">
         <button class="btn" id="btn-seed-futbol">+ Liga de ejemplo (Fútbol)</button>
         <button class="btn" id="btn-seed-basquet">+ Liga de ejemplo (Básquet)</button>
+        <button class="btn" id="btn-seed-voley">+ Liga de ejemplo (Vóley)</button>
         <button class="btn" id="btn-import">Importar JSON</button>
         <button class="btn btn-primary" id="btn-new-league">Nueva liga</button>
       </div>
@@ -26,20 +27,29 @@ async function renderLeagues() {
   `;
 
   document.getElementById('btn-new-league').addEventListener('click', () => openLeagueForm());
-  document.getElementById('btn-seed-futbol').addEventListener('click', async () => {
-    await window.Statium.Seed.seedFutbolLeague();
-    window.Statium.UI.showToast('Liga de fútbol de ejemplo creada.');
-    renderLeagues();
-  });
-  document.getElementById('btn-seed-basquet').addEventListener('click', async () => {
-    await window.Statium.Seed.seedBasquetLeague();
-    window.Statium.UI.showToast('Liga de básquet de ejemplo creada.');
-    renderLeagues();
-  });
+  document.getElementById('btn-seed-futbol').addEventListener('click', () => handleSeed('Fútbol', window.Statium.Seed.seedFutbolLeague, 'Liga de fútbol de ejemplo creada.'));
+  document.getElementById('btn-seed-basquet').addEventListener('click', () => handleSeed('Básquet', window.Statium.Seed.seedBasquetLeague, 'Liga de básquet de ejemplo creada.'));
+  document.getElementById('btn-seed-voley').addEventListener('click', () => handleSeed('Vóley', window.Statium.Seed.seedVoleyLeague, 'Liga de vóley de ejemplo creada.'));
   document.getElementById('btn-import').addEventListener('click', () => document.getElementById('import-input').click());
   document.getElementById('import-input').addEventListener('change', handleImportFile);
 
   await renderGrid(leagues);
+}
+
+// Confirmación previa (igual que al eliminar) para cualquier liga de ejemplo,
+// sea cual sea el deporte: crea equipos, jugadores y datos de prueba, así
+// que conviene que la persona lo confirme antes de que aparezcan en su lista.
+async function handleSeed(sportLabel, seedFn, successMessage) {
+  const ok = await window.Statium.UI.confirmDialog({
+    title: `Crear liga de ejemplo (${sportLabel})`,
+    message: 'Se va a generar una liga de prueba completa con equipos, jugadores y partidos de ejemplo. Vas a poder eliminarla después si querés.',
+    confirmLabel: 'Crear liga de ejemplo',
+    danger: false,
+  });
+  if (!ok) return;
+  await seedFn();
+  window.Statium.UI.showToast(successMessage);
+  renderLeagues();
 }
 
 async function renderGrid(leagues) {
