@@ -15,7 +15,7 @@ class AppFooter extends HTMLElement {
       <span>Statium — Mariangel Campos &amp; Adrian Monroy · ${new Date().getFullYear()}</span>
       <span class="footer__db-status">
         <span class="footer__db-dot" data-role="dot"></span>
-        <span data-role="text">Verificando IndexedDB…</span>
+        <span data-role="text">Verificando base de datos…</span>
       </span>
     `;
     this.checkDb();
@@ -27,10 +27,10 @@ class AppFooter extends HTMLElement {
     try {
       await window.Statium.DB.openDatabase();
       dot.classList.remove('is-error');
-      text.textContent = 'IndexedDB conectado';
+      text.textContent = 'Base de datos conectada';
     } catch (err) {
       dot.classList.add('is-error');
-      text.textContent = 'Error de IndexedDB';
+      text.textContent = 'Error al conectar con la base de datos';
     }
   }
 }

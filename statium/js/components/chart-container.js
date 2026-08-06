@@ -1,6 +1,15 @@
-
+/**
+ * chart-container.js — Componente envolvente para gráficos Chart.js (script clásico).
+ */
 (function () {
   'use strict';
+
+/**
+ * chart-container.js — Componente envolvente para gráficos Chart.js.
+ * Recibe una config `{ title, type, data, options, empty }` y se encarga
+ * de crear/destruir la instancia de Chart, y de mostrar un mensaje si
+ * no hay datos suficientes (RNF, sección 6.3).
+ */
 
 class ChartContainer extends HTMLElement {
   set config(cfg) {

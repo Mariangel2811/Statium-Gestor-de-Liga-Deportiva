@@ -1,4 +1,7 @@
-
+/**
+ * ui.js — Componentes globales de interfaz (Toast, ConfirmDialog, LoadingState).
+ * Script clásico: expone window.Statium.UI.
+ */
 (function () {
   'use strict';
 

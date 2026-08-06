@@ -1,6 +1,14 @@
-
+/**
+ * cards.js — Custom Elements de tarjetas reutilizables (script clásico).
+ */
 (function () {
   'use strict';
+
+/**
+ * cards.js — Custom Elements de tarjetas reutilizables.
+ * Cada uno recibe sus datos vía la propiedad `.data = {...}` (no atributos,
+ * porque los datos son objetos complejos) y se re-renderiza en el setter.
+ */
 
 function crestHTML(team, size = 42) {
   if (team.crestUrl) {

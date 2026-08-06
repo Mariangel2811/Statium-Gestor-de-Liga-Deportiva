@@ -1,6 +1,14 @@
-
+/**
+ * event-form.js — Sub-formulario de anotaciones (script clásico).
+ */
 (function () {
   'use strict';
+
+/**
+ * event-form.js — Sub-formulario para registrar una anotación (evento)
+ * de un partido en curso. Emite un evento DOM 'event-add' con
+ * { teamId, playerId, minute } en el detalle.
+ */
 
 class EventForm extends HTMLElement {
   set data({ homeTeam, awayTeam, homePlayers, awayPlayers, sport } = {}) {

@@ -9,8 +9,8 @@
  */
 
 const NAV_LINKS = [
-  { hash: '#dashboard', label: 'Dashboard' },
   { hash: '#leagues', label: 'Ligas' },
+  { hash: '#dashboard', label: 'Dashboard' },
   { hash: '#teams', label: 'Equipos' },
   { hash: '#players', label: 'Jugadores' },
   { hash: '#matches', label: 'Partidos' },
@@ -29,7 +29,7 @@ class NavBar extends HTMLElement {
 
     this.className = 'navbar';
     this.innerHTML = `
-      <a href="#dashboard" class="navbar__brand"><span class="navbar__star">★</span>Statium</a>
+      <a href="#about" class="navbar__brand"><span class="navbar__star">★</span>Statium</a>
       <nav class="navbar__links">
         ${NAV_LINKS.map((l) => `<a class="navbar__link" href="${l.hash}">${l.label}</a>`).join('')}
       </nav>
