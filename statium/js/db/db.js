@@ -1,23 +1,6 @@
-/* db.js empaquetado como script clásico (sin ES modules) para poder abrir index.html con file:// sin servidor. */
 (function () {
   'use strict';
 
-/**
- * db.js — Capa de persistencia (IndexedDB)
- * ------------------------------------------------------------------
- * Única puerta de entrada a IndexedDB. Ningún componente o vista debe
- * abrir una transacción directamente: todo pasa por las funciones
- * exportadas aquí (RNF y sección 6.1 del documento de requerimientos).
- *
- * Base de datos: "statium-db"
- * Object stores e índices:
- *   leagues  -> idx: name, isActive
- *   teams    -> idx: leagueId, name
- *   players  -> idx: teamId, name
- *   matches  -> idx: leagueId, homeTeamId, awayTeamId, date, status
- *   events   -> idx: matchId, playerId
- * ------------------------------------------------------------------
- */
 
 const DB_NAME = 'statium-db';
 const DB_VERSION = 1;
@@ -166,7 +149,6 @@ async function createLeague(data) {
 async function updateLeague(id, patch) {
   const existing = await getById('leagues', id);
   if (!existing) throw new Error('Liga no encontrada');
-  // La modalidad no puede modificarse una vez creada (sección 4.2.2).
   const safePatch = { ...patch };
   delete safePatch.mode;
   delete safePatch.roundTrip;
@@ -438,7 +420,6 @@ async function generateBracket(leagueId, startDate = new Date()) {
   }
 
   const totalRounds = Math.log2(league.bracketSize);
-  /** @type {any[][]} matchesByRound[0] = ronda 1, etc. */
   const matchesByRound = [];
 
   // Ronda 1: partidos reales con equipos asignados.
@@ -507,12 +488,6 @@ async function generateBracket(leagueId, startDate = new Date()) {
 // ------------------------------------------------------------------
 // FINALIZAR PARTIDO — la operación de integridad central del proyecto
 // ------------------------------------------------------------------
-
-/**
- * events: [{ teamId, playerId, minute }]
- * winnerTeamIdIfTie: requerido solo en eliminación directa si el marcador
- * calculado a partir de los eventos queda empatado.
- */
 async function finalizeMatch(matchId, events, winnerTeamIdIfTie = null) {
   const db = await openDatabase();
 
@@ -585,11 +560,6 @@ async function finalizeMatch(matchId, events, winnerTeamIdIfTie = null) {
     }
 
     // 6. Eliminación directa: avanzar ganador a la siguiente ronda.
-    // IMPORTANTE: leemos nextMatch con el MISMO `tx` (nunca con getById(), que
-    // abriría una transacción nueva). Si hiciéramos `await getById(...)` aquí,
-    // la transacción original podría auto-commitearse durante el await al no
-    // tener pedidos pendientes, y el `put()` posterior fallaría con
-    // TransactionInactiveError, rompiendo el avance automático del bracket.
     if (league.mode === 'eliminacion' && match.nextMatchId) {
       const nextMatch = await reqToPromise(tx.objectStore('matches').get(match.nextMatchId));
       if (nextMatch) {
@@ -626,7 +596,7 @@ function applyMatchResultToTeam(team, scored, conceded, mode, winnerTeamId, team
   else team.stats.pp += 1;
 }
 
-/** Calcula los puntos de tabla de un equipo (3-1-0). */
+/** Calcula los puntos de tabla de un equipo*/
 function computeTeamPoints(stats) {
   return stats.pg * 3 + stats.pe * 1;
 }
@@ -644,8 +614,7 @@ async function undoMatch(matchId) {
 
   const league = await getById('leagues', match.leagueId);
 
-  // Restricción: no se puede deshacer si el partido de la siguiente ronda
-  // ya está finalizado.
+  // Restricción: no se puede deshacer si el partido de la siguiente ronda ya está finalizado.
   if (league.mode === 'eliminacion' && match.nextMatchId) {
     const nextMatch = await getById('matches', match.nextMatchId);
     if (nextMatch && nextMatch.status === 'finalizado') {
@@ -693,7 +662,6 @@ async function undoMatch(matchId) {
     tx.objectStore('matches').put(match);
 
     // 5. Limpiar el slot del partido siguiente si aún no está finalizado.
-    // Igual que en finalizeMatch: se lee con el mismo `tx`, nunca con getById().
     if (league.mode === 'eliminacion' && match.nextMatchId) {
       const nextMatch = await reqToPromise(tx.objectStore('matches').get(match.nextMatchId));
       if (nextMatch && nextMatch.status !== 'finalizado') {
