@@ -1,6 +1,24 @@
-
+/* db.js empaquetado como script clásico (sin ES modules) para poder abrir index.html con file:// sin servidor. */
 (function () {
   'use strict';
+
+/**
+ * db.js — Capa de persistencia (IndexedDB)
+ * ------------------------------------------------------------------
+ * Única puerta de entrada a IndexedDB. Ningún componente o vista debe
+ * abrir una transacción directamente: todo pasa por las funciones
+ * exportadas aquí (RNF y sección 6.1 del documento de requerimientos).
+ *
+ * Base de datos: "statium-db"
+ * Object stores e índices:
+ *   leagues  -> idx: name, isActive
+ *   teams    -> idx: leagueId, name
+ *   players  -> idx: teamId, name
+ *   matches  -> idx: leagueId, homeTeamId, awayTeamId, date, status
+ *   events   -> idx: matchId, playerId
+ * ------------------------------------------------------------------
+ */
+
 const DB_NAME = 'statium-db';
 const DB_VERSION = 1;
 
@@ -65,8 +83,9 @@ function uid() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-
+// ------------------------------------------------------------------
 // Helpers genéricos de bajo nivel (envuelven un IDBRequest en Promise)
+// ------------------------------------------------------------------
 
 function reqToPromise(request) {
   return new Promise((resolve, reject) => {
@@ -123,7 +142,9 @@ async function remove(storeName, id) {
   await txToPromise(tx);
 }
 
+// ------------------------------------------------------------------
 // LIGAS — operaciones simples
+// ------------------------------------------------------------------
 
 async function createLeague(data) {
   const league = {
@@ -180,7 +201,9 @@ async function getActiveLeague() {
   return leagues[0] || null;
 }
 
+// ------------------------------------------------------------------
 // ELIMINAR LIGA EN CASCADA (operación de integridad)
+// ------------------------------------------------------------------
 
 async function deleteLeagueCascade(leagueId) {
   const db = await openDatabase();
@@ -217,7 +240,9 @@ async function deleteLeagueCascade(leagueId) {
   }
 }
 
+// ------------------------------------------------------------------
 // EQUIPOS
+// ------------------------------------------------------------------
 
 async function createTeam(data) {
   const team = {
@@ -255,7 +280,9 @@ async function deleteTeam(teamId) {
   await txToPromise(tx);
 }
 
+// ------------------------------------------------------------------
 // JUGADORES
+// ------------------------------------------------------------------
 
 async function createPlayer(data) {
   const player = {
@@ -285,7 +312,9 @@ async function deletePlayer(playerId) {
   return remove('players', playerId);
 }
 
+// ------------------------------------------------------------------
 // PARTIDOS — creación manual (solo modalidad liga)
+// ------------------------------------------------------------------
 
 async function createMatch(data) {
   const match = {
@@ -325,7 +354,9 @@ async function deleteMatch(matchId) {
   return remove('matches', matchId);
 }
 
+// ------------------------------------------------------------------
 // GENERAR FIXTURE (modalidad liga) — operación de integridad
+// ------------------------------------------------------------------
 
 async function generateFixture(leagueId, startDate = new Date()) {
   const league = await getById('leagues', leagueId);
@@ -372,7 +403,9 @@ async function generateFixture(leagueId, startDate = new Date()) {
   return matches;
 }
 
+// ------------------------------------------------------------------
 // GENERAR BRACKET (modalidad eliminación directa) — operación de integridad
+// ------------------------------------------------------------------
 
 const ROUND_NAMES = {
   16: ['Octavos', 'Cuartos', 'Semifinal', 'Final'],
@@ -471,8 +504,15 @@ async function generateBracket(leagueId, startDate = new Date()) {
   return allMatches;
 }
 
+// ------------------------------------------------------------------
 // FINALIZAR PARTIDO — la operación de integridad central del proyecto
+// ------------------------------------------------------------------
 
+/**
+ * events: [{ teamId, playerId, minute }]
+ * winnerTeamIdIfTie: requerido solo en eliminación directa si el marcador
+ * calculado a partir de los eventos queda empatado.
+ */
 async function finalizeMatch(matchId, events, winnerTeamIdIfTie = null) {
   const db = await openDatabase();
 
@@ -545,8 +585,13 @@ async function finalizeMatch(matchId, events, winnerTeamIdIfTie = null) {
     }
 
     // 6. Eliminación directa: avanzar ganador a la siguiente ronda.
+    // IMPORTANTE: leemos nextMatch con el MISMO `tx` (nunca con getById(), que
+    // abriría una transacción nueva). Si hiciéramos `await getById(...)` aquí,
+    // la transacción original podría auto-commitearse durante el await al no
+    // tener pedidos pendientes, y el `put()` posterior fallaría con
+    // TransactionInactiveError, rompiendo el avance automático del bracket.
     if (league.mode === 'eliminacion' && match.nextMatchId) {
-      const nextMatch = await getById('matches', match.nextMatchId);
+      const nextMatch = await reqToPromise(tx.objectStore('matches').get(match.nextMatchId));
       if (nextMatch) {
         if (match.nextMatchSlot === 'home') nextMatch.homeTeamId = winnerTeamId;
         else nextMatch.awayTeamId = winnerTeamId;
@@ -586,7 +631,9 @@ function computeTeamPoints(stats) {
   return stats.pg * 3 + stats.pe * 1;
 }
 
+// ------------------------------------------------------------------
 // DESHACER PARTIDO — operación de integridad inversa
+// ------------------------------------------------------------------
 
 async function undoMatch(matchId) {
   const db = await openDatabase();
@@ -646,8 +693,9 @@ async function undoMatch(matchId) {
     tx.objectStore('matches').put(match);
 
     // 5. Limpiar el slot del partido siguiente si aún no está finalizado.
+    // Igual que en finalizeMatch: se lee con el mismo `tx`, nunca con getById().
     if (league.mode === 'eliminacion' && match.nextMatchId) {
-      const nextMatch = await getById('matches', match.nextMatchId);
+      const nextMatch = await reqToPromise(tx.objectStore('matches').get(match.nextMatchId));
       if (nextMatch && nextMatch.status !== 'finalizado') {
         if (match.nextMatchSlot === 'home') nextMatch.homeTeamId = null;
         else nextMatch.awayTeamId = null;
@@ -680,7 +728,9 @@ function revertMatchResultFromTeam(team, scored, conceded, mode, winnerTeamId, t
   else team.stats.pp = Math.max(0, team.stats.pp - 1);
 }
 
+// ------------------------------------------------------------------
 // EXPORTAR / IMPORTAR
+// ------------------------------------------------------------------
 
 async function exportLeague(leagueId) {
   const league = await getById('leagues', leagueId);
