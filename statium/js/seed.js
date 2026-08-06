@@ -1,6 +1,7 @@
 
 (function () {
   'use strict';
+
 const { createLeague, createTeam, createPlayer } = window.Statium.DB;
 
 const FUTBOL_TEAMS = [
@@ -15,6 +16,13 @@ const BASQUET_TEAMS = [
   { name: 'Tiburones', colorPrimary: '#1F8A8C', colorSecondary: '#14181C', city: 'Ciudad Sur' },
   { name: 'Lobos', colorPrimary: '#6B2FA3', colorSecondary: '#14181C', city: 'Ciudad Este' },
   { name: 'Cóndores', colorPrimary: '#B02E3C', colorSecondary: '#14181C', city: 'Ciudad Oeste' },
+];
+
+const VOLEY_TEAMS = [
+  { name: 'Olas del Puerto', colorPrimary: '#2F80FF', colorSecondary: '#FFCC33', city: 'Puntarenas' },
+  { name: 'Águilas Doradas', colorPrimary: '#FFCC33', colorSecondary: '#1A1400', city: 'San José' },
+  { name: 'Tritones', colorPrimary: '#1B2A6B', colorSecondary: '#F2F1EC', city: 'Limón' },
+  { name: 'Rayo Celeste', colorPrimary: '#3FB6E8', colorSecondary: '#14181C', city: 'Liberia' },
 ];
 
 const FIRST_NAMES = ['Mateo', 'Sofía', 'Lucas', 'Valentina', 'Diego', 'Camila', 'Andrés', 'Renata', 'Iván', 'Paula'];
@@ -78,5 +86,18 @@ async function seedBasquetLeague() {
   return league;
 }
 
-  window.Statium.Seed = { seedFutbolLeague, seedBasquetLeague };
+async function seedVoleyLeague() {
+  const league = await createLeague({
+    name: `Liga Costera Vóley ${Date.now().toString(36).slice(-4)}`,
+    sport: 'voley',
+    mode: 'liga',
+    roundTrip: false,
+    season: '2026-II',
+    description: 'Liga de ejemplo generada automáticamente para pruebas.',
+  });
+  await seedTeamsWithPlayers(league.id, VOLEY_TEAMS, ['Colocador', 'Opuesto', 'Central', 'Punta', 'Líbero']);
+  return league;
+}
+
+  window.Statium.Seed = { seedFutbolLeague, seedBasquetLeague, seedVoleyLeague };
 })();

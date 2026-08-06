@@ -21,7 +21,7 @@
   }
 
   function currentHash() {
-    return window.location.hash.replace(/^#/, '') || 'dashboard';
+    return window.location.hash.replace(/^#/, '') || 'leagues';
   }
 
   async function handleRouteChange() {
@@ -33,11 +33,12 @@
         route.paramNames.forEach((name, i) => (params[name] = match[i + 1]));
         await route.handler(params);
         highlightActiveNav(path);
+        document.body.dataset.view = path.split('/')[0];
         return;
       }
     }
-    // Ruta desconocida: volver al dashboard.
-    window.location.hash = '#dashboard';
+    // Ruta desconocida: volver a Ligas (ventana inicial de la app).
+    window.location.hash = '#leagues';
   }
 
   function highlightActiveNav(path) {

@@ -14,6 +14,7 @@
   });
 
   registerRoute('dashboard', V.renderDashboard);
+  registerRoute('about', V.renderAbout);
   registerRoute('leagues', V.renderLeagues);
   registerRoute('teams', V.renderTeams);
   registerRoute('team/:id', V.renderTeamDetail);

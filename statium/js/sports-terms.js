@@ -1,8 +1,7 @@
 
 (function () {
   'use strict';
-
-
+  
 const SPORTS = {
   futbol: {
     id: 'futbol',
