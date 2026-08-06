@@ -1,12 +1,6 @@
-/**
- * matches.js — vista de Statium (script clásico).
- */
+
 (function () {
   'use strict';
-
-/**
- * matches.js — V-07 Partidos (#matches)
- */
 
 const outlet = () => document.getElementById('view-outlet');
 
